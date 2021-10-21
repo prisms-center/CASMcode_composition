@@ -15,17 +15,6 @@ class CompositionConverter;
 jsonParser &to_json(composition::CompositionConverter const &f,
                     jsonParser &json);
 
-// template <>
-// struct jsonMake<composition::CompositionConverter> {
-//   static std::unique_ptr<composition::CompositionConverter> make_from_json(
-//       jsonParser const &json);
-// };
-//
-// template <>
-// struct jsonConstructor<composition::CompositionConverter> {
-//   static composition::CompositionConverter from_json(jsonParser const &json);
-// };
-
 /// \brief Read composition::CompositionConverter from JSON
 template <>
 composition::CompositionConverter from_json<composition::CompositionConverter>(

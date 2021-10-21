@@ -24,42 +24,6 @@ jsonParser &to_json(composition::CompositionConverter const &f,
   return json;
 }
 
-// std::unique_ptr<composition::CompositionConverter>
-// jsonMake<composition::CompositionConverter>::make_from_json(jsonParser const
-// &json) {
-//   return std::make_unique<composition::CompositionConverter>(
-//       jsonConstructor<composition::CompositionConverter>::from_json(json));
-// }
-//
-// composition::CompositionConverter
-// jsonConstructor<composition::CompositionConverter>::from_json(jsonParser
-// const &json) {
-//   std::vector<std::string> components;
-//   Eigen::VectorXd origin;
-//
-//   int independent_compositions;
-//
-//   from_json(components, json["components"]);
-//   from_json(origin, json["origin"]);
-//
-//   from_json(independent_compositions, json["independent_compositions"]);
-//   Eigen::MatrixXd end_members(components.size(), independent_compositions);
-//   Eigen::VectorXd tvec;
-//   for (int i = 0; i < independent_compositions; i++) {
-//     from_json(tvec, json[CompositionConverter::comp_var(i)]);
-//     end_members.col(i) = tvec;
-//   }
-//
-//   return CompositionConverter(components.begin(), components.end(), origin,
-//                               end_members);
-// }
-//
-// /// \brief Deserialize CompositionConverter from JSON
-// void from_json(CompositionConverter &f, const jsonParser &json) {
-//   f = jsonConstructor<composition::CompositionConverter>::from_json(json);
-// }
-//
-
 template <>
 composition::CompositionConverter from_json<composition::CompositionConverter>(
     jsonParser const &json) {
