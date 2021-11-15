@@ -36,6 +36,9 @@ class CompositionConverter {
   /// \brief The order of components in mol composition vectors
   std::vector<std::string> components() const;
 
+  /// \brief Vector of "a", "b", ... of size `independent_compositions()`
+  std::vector<std::string> axes() const;
+
   /// \brief The mol composition of the parameteric composition axes origin
   Eigen::VectorXd origin() const;
 

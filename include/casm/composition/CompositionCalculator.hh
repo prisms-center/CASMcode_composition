@@ -49,6 +49,9 @@ class CompositionCalculator {
   /// \brief The order of components in composition vector results
   std::vector<std::string> components() const;
 
+  /// \brief The number of sublattices
+  Index n_sublat() const;
+
   /// \brief Returns the composition as number per primitive cell, in the order
   ///     of components
   Eigen::VectorXd mean_num_each_component(
@@ -58,8 +61,23 @@ class CompositionCalculator {
   Eigen::VectorXi num_each_component(Eigen::VectorXi const &occupation) const;
 
   /// \brief Returns the composition as species fraction, with [Va] = 0.0, in
-  ///        the order of components
+  ///     the order of components
   Eigen::VectorXd species_frac(Eigen::VectorXi const &occupation) const;
+
+  /// \brief Returns the composition as number per primitive cell, in the order
+  ///     of components, on a particular sublattice
+  Eigen::VectorXd mean_num_each_component(Eigen::VectorXi const &occupation,
+                                          Index sublattice_index) const;
+
+  /// \brief Returns the composition as total number, in the order of
+  ///     components, on a particular sublattice
+  Eigen::VectorXi num_each_component(Eigen::VectorXi const &occupation,
+                                     Index sublattice_index) const;
+
+  /// \brief Returns the composition as species fraction, with [Va] = 0.0, in
+  ///     the order of components, on a particular sublattice
+  Eigen::VectorXd species_frac(Eigen::VectorXi const &occupation,
+                               Index sublattice_index) const;
 
  private:
   // Names of components corresponding to each position in

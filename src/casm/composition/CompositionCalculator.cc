@@ -37,6 +37,11 @@ std::vector<std::string> CompositionCalculator::components() const {
   return m_components;
 }
 
+/// \brief The number of sublattices
+Index CompositionCalculator::n_sublat() const {
+  return m_occ_to_component_index_converter.size();
+}
+
 /// \brief Returns the composition as number per primitive cell, in the order
 ///     of components
 ///
@@ -74,11 +79,11 @@ Eigen::VectorXi CompositionCalculator::num_each_component(
   Eigen::VectorXi result = Eigen::VectorXi::Zero(n_component);
 
   // count the number of each component
-  Index l = 0;
   for (Index b = 0; b < n_sublat; ++b) {
+    auto const &sublat_index_converter = m_occ_to_component_index_converter[b];
+    Index l_init = b * volume;
     for (Index i = 0; i < volume; ++i) {
-      result[m_occ_to_component_index_converter[b][occupation[l]]] += 1;
-      ++l;
+      result[sublat_index_converter[occupation[l_init + i]]] += 1;
     }
   }
   return result;
@@ -96,6 +101,77 @@ Eigen::VectorXi CompositionCalculator::num_each_component(
 Eigen::VectorXd CompositionCalculator::species_frac(
     Eigen::VectorXi const &occupation) const {
   Eigen::VectorXd result = this->mean_num_each_component(occupation);
+  if (m_vacancy_allowed) {
+    result(m_vacancy_index) = 0.0;
+  }
+  double sum = result.sum();
+  result /= sum;
+  return result;
+}
+
+/// \brief Returns the composition as number per primitive cell, in the order
+///     of components, on a particular sublattice
+///
+/// \param occupation A vector of integer indicating which component is on each
+///     site, according to `species == allowed_occs[b][occupation[i]]`, where
+///     the sublattice index, `b`, can be determined from `b = i / volume` and
+///     `volume = occupation.size() / allowed_occs.size()`.
+///
+/// \returns The composition, as number per primitive cell, in the order of
+///     `components`, on a particular sublattice.
+Eigen::VectorXd CompositionCalculator::mean_num_each_component(
+    Eigen::VectorXi const &occupation, Index sublattice_index) const {
+  Index n_sites = occupation.size();
+  Index n_sublat = m_occ_to_component_index_converter.size();
+  Index volume = n_sites / n_sublat;
+  return num_each_component(occupation, sublattice_index).cast<double>() /
+         volume;
+}
+
+/// \brief Returns the composition as total number, in the order of components,
+///     on a particular sublattice
+///
+/// \param occupation A vector of integer indicating which component is on each
+///     site, according to `species == allowed_occs[b][occupation[i]]`, where
+///     the sublattice index, `b`, can be determined from `b = i / volume` and
+///     `volume = occupation.size() / allowed_occs.size()`.
+///
+/// \returns The composition, as total number, in the order of `components`, on
+///     a particular sublattice.
+Eigen::VectorXi CompositionCalculator::num_each_component(
+    Eigen::VectorXi const &occupation, Index sublattice_index) const {
+  Index n_sites = occupation.size();
+  Index n_sublat = m_occ_to_component_index_converter.size();
+  Index volume = n_sites / n_sublat;
+  Index n_component = m_components.size();
+
+  // initialize
+  Eigen::VectorXi result = Eigen::VectorXi::Zero(n_component);
+
+  // count the number of each component
+  Index b = sublattice_index;
+  Index l_init = b * volume;
+  auto const &sublat_index_converter = m_occ_to_component_index_converter[b];
+  for (Index i = 0; i < volume; ++i) {
+    result[sublat_index_converter[occupation[l_init + i]]] += 1;
+  }
+  return result;
+}
+
+/// \brief Returns the composition as species fraction, with [Va] = 0.0, in
+///        the order of components, on a particular sublattice
+///
+/// \param occupation A vector of integer indicating which component is on each
+///     site, according to `species == allowed_occs[b][occupation[i]]`, where
+///     the sublattice index, `b`, can be determined from `b = i / volume` and
+///     `volume = occupation.size() / allowed_occs.size()`.
+///
+/// \returns The composition, as total number, in the order of `components`, on
+///     a particular sublattice.
+Eigen::VectorXd CompositionCalculator::species_frac(
+    Eigen::VectorXi const &occupation, Index sublattice_index) const {
+  Eigen::VectorXd result =
+      this->mean_num_each_component(occupation, sublattice_index);
   if (m_vacancy_allowed) {
     result(m_vacancy_index) = 0.0;
   }

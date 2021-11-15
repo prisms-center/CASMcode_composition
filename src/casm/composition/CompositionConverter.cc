@@ -56,6 +56,15 @@ std::vector<std::string> CompositionConverter::components() const {
   return m_components;
 }
 
+/// \brief Vector of "a", "b", ... of size `independent_compositions()`
+std::vector<std::string> CompositionConverter::axes() const {
+  std::vector<std::string> _axes;
+  for (Index i = 0; i < independent_compositions(); ++i) {
+    _axes.push_back(comp_var(i));
+  }
+  return _axes;
+}
+
 /// \brief The mol composition of the parameteric composition axes origin
 ///
 /// - Matches order from components()
