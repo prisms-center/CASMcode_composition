@@ -171,6 +171,11 @@ Eigen::MatrixXd null_composition_space(
                                                                  "va"}),
     double tol = 1e-14);
 
+/// \brief Make the exchange chemical potential matrix
+Eigen::MatrixXd make_exchange_chemical_potential(
+    Eigen::VectorXd param_chem_pot,
+    CompositionConverter const &composition_converter);
+
 }  // namespace composition
 }  // namespace CASM
 

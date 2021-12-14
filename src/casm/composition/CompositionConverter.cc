@@ -693,5 +693,32 @@ Eigen::MatrixXd null_composition_space(
   return Q.rightCols(Q.cols() - Qr.rank());
 }
 
+/// \brief Make the exchange chemical potential matrix
+///
+/// \param param_chem_pot The parametric chemical potential, \f$\vec{\xi}\f$,
+///     which is conjugate to the parametric composition \f$x\f$, and satisfies
+///     \f$ \vec{\xi}^{\mathsf{T}} \vec{x} = \vec{\mu}^{\mathsf{T}} \vec{n}\f$.
+/// \param composition_converter CompositionConverter instance
+///
+/// \returns Matrix, \f$M\f$, with values \f$M(i,j) = \mu_i - \mu_j\f$.
+///
+Eigen::MatrixXd make_exchange_chemical_potential(
+    Eigen::VectorXd param_chem_pot,
+    CompositionConverter const &composition_converter) {
+  int Ncomp = composition_converter.components().size();
+  Eigen::MatrixXd exchange_chem_pot = Eigen::MatrixXd(Ncomp, Ncomp);
+  for (int index_new = 0; index_new < Ncomp; ++index_new) {
+    for (int index_curr = 0; index_curr < Ncomp; ++index_curr) {
+      Eigen::VectorXl dn = Eigen::VectorXl::Zero(Ncomp);
+      dn(index_new) += 1;
+      dn(index_curr) -= 1;
+      exchange_chem_pot(index_new, index_curr) =
+          param_chem_pot.transpose() * composition_converter.dparam_dmol() *
+          dn.cast<double>();
+    }
+  }
+  return exchange_chem_pot;
+}
+
 }  // namespace composition
 }  // namespace CASM
