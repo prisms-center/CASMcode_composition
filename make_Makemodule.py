@@ -813,7 +813,8 @@ def main():
         {
             "directory": "tests/unit/composition",
             "ldadd": [
-                "libcasm_composition.la"
+                "libcasm_composition.la",
+                "-lcasm_global",
             ],
         }
     ])
