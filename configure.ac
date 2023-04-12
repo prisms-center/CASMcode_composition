@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([CASM],
+AC_INIT([casm-composition],
         m4_esyscmd([tr -d '\n' < ./casm_version.txt]),
         [casm-developers@lists.engr.ucsb.edu],
         [],
