@@ -194,7 +194,7 @@ TEST(CompositionConverterTest, Test4) {
   EXPECT_EQ(comp_converter.mol_formula(), "A(a)B(2-a-c)C(1-b+c)D(b)");
 
   Eigen::VectorXd comp_n(4);
-  Eigen::VectorXd expected(2);
+  Eigen::VectorXd expected(3);
 
   comp_n = origin;
   expected << 0.0, 0.0, 0.0;
@@ -211,14 +211,14 @@ TEST(CompositionConverterTest, Test4) {
   EXPECT_TRUE(almost_equal(comp_converter.param_composition(comp_n), expected));
 
   comp_n << 0.5, 1.0, 1.0, 0.5;
-  expected << 0.5, 0.5, 0.0;
+  expected << 0.5, 0.5, 0.5;
   std::cout << "param_comp: "
             << comp_converter.param_composition(comp_n).transpose()
             << std::endl;
   EXPECT_TRUE(almost_equal(comp_converter.param_composition(comp_n), expected));
 
   comp_n << 1.0, 0.5, 0.5, 1.0;
-  expected << 1.0, 1.0, 0.0;
+  expected << 1.0, 1.0, 0.5;
   std::cout << "param_comp: "
             << comp_converter.param_composition(comp_n).transpose()
             << std::endl;
