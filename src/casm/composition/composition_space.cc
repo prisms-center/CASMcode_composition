@@ -1,9 +1,5 @@
 #include "casm/composition/composition_space.hh"
 
-#include <iostream>
-
-#include "casm/misc/CASM_Eigen_math.hh"
-
 namespace CASM {
 namespace composition {
 
@@ -32,6 +28,51 @@ Eigen::MatrixXi _sort_and_hstack(
     }
   }
   return end_members;
+}
+
+// Works for signed and unsigned types
+template <typename IntType>
+IntType _nchoosek(IntType n, IntType k) {
+  if (n < k) return 0;
+
+  assert(0 <= k);
+  if (n < 2 * k) k = n - k;
+
+  n -= k;
+
+  IntType result(1);
+  for (IntType i = 1; i < k + 1; i++) {
+    result *= n + i;
+    result /= i;
+  }
+
+  return result;
+}
+
+// Works for signed and unsigned types
+template <typename IntType>
+std::vector<IntType> _index_to_kcombination(IntType ind, IntType k) {
+  std::vector<IntType> result;
+  result.reserve(k);
+  IntType n;
+  IntType big, bigger;
+  for (; k > 0; --k) {
+    n = k;
+    bigger = 1;
+    while (bigger <= ind) {
+      big = bigger;
+      bigger = _nchoosek(++n, k);
+    }
+    result.push_back(n - 1);
+    ind -= big;
+  }
+  // check:
+  for (int i = 0; i < result.size() - 1; ++i) {
+    if (result[i + 1] >= result[i]) {
+      throw std::runtime_error("Error in _index_to_kcombination");
+    }
+  }
+  return result;
 }
 
 }  // namespace
@@ -77,7 +118,7 @@ std::vector<Eigen::MatrixXd> make_standard_origin_and_end_members(
   // one as origin and construct axes from the rest
   Index K = rank_of_space;
   Index N = end_members_column_matrix.cols();  // N: total number end members
-  Index ncomb = nchoosek(N, K);
+  Index ncomb = _nchoosek(N, K);
 
   // Loop over combinations of possible end members,
   // testing for "standard" axes, by checking for each K-combination:
@@ -90,7 +131,7 @@ std::vector<Eigen::MatrixXd> make_standard_origin_and_end_members(
   for (Index c = 0; c < ncomb; ++c) {
     // Indices of current combination is stored in 'combo' vector
     std::vector<Index> combo;
-    combo = index_to_kcombination(c, K);
+    combo = _index_to_kcombination(c, K);
 
     // Test end member column matrix shape=(n_components x rank_of_space)
     Eigen::MatrixXd tmembers_column_matrix(n_components, rank_of_space);
@@ -307,12 +348,12 @@ Eigen::MatrixXi make_subsystem_end_members(
   // sublattices
   Index k = sublattice_type_multiplicity.size();
   Index n = subsystem_components_vec.size();
-  Index ncomb = nchoosek(n, k);
+  Index ncomb = _nchoosek(n, k);
 
   std::vector<Eigen::VectorXi> result;
   for (Index ic = 0; ic < ncomb; ++ic) {
     // Combination is stored in 'combo' vector
-    std::vector<Index> tcombo = index_to_kcombination(ic, k);
+    std::vector<Index> tcombo = _index_to_kcombination(ic, k);
 
     std::vector<Index> combo(tcombo.rbegin(), tcombo.rend());
 
@@ -420,6 +461,9 @@ bool is_positive_parametric_space(
   // - x = to_x_matrix * (n - origin),
   //   - x=parametric composition, n=component composition
   Index K = test_origin_and_end_members.cols();
+  if (K <= 1) {
+    throw std::runtime_error("Error in is_positive_parametric_space: K <= 1");
+  }
   Eigen::VectorXd origin = test_origin_and_end_members.col(0);
   Eigen::MatrixXd test_axes =
       test_origin_and_end_members.rightCols(K - 1).colwise() - origin;

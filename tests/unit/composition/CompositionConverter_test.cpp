@@ -210,15 +210,15 @@ TEST(CompositionConverterTest, Test4) {
   expected << 0.0, 0.0, 1.0;
   EXPECT_TRUE(almost_equal(comp_converter.param_composition(comp_n), expected));
 
-  comp_n << 0.5, 1.5, 0.5, 0.5;
-  expected << 0.5, 0.5, 0.0;
+  comp_n << 0.5, 1.0, 1.0, 0.5;
+  expected << 0.5, 0.5, 0.5;
   // std::cout << "param_comp: "
   //           << comp_converter.param_composition(comp_n).transpose()
   //           << std::endl;
   EXPECT_TRUE(almost_equal(comp_converter.param_composition(comp_n), expected));
 
-  comp_n << 1.0, 1.0, 0.0, 1.0;
-  expected << 1.0, 1.0, 0.0;
+  comp_n << 1.0, 0.5, 0.5, 1.0;
+  expected << 1.0, 1.0, 0.5;
   // std::cout << "param_comp: "
   //           << comp_converter.param_composition(comp_n).transpose()
   //           << std::endl;
