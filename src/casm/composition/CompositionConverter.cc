@@ -35,6 +35,30 @@ CompositionConverter::CompositionConverter(
   _calc_conversion_matrices();
 }
 
+/// \brief Construct a CompositionConverter
+///
+/// \param _components The order of species in the composition vectors.
+/// \param _origin Origin for parametric composition space axess
+/// \param _origin_and_end_members Column vector matrix of the origin
+///     (first column) and end members for parameteric composition space
+///     axes. End members are the points in composition space corresponding
+///     to unit length along one parametric composition axis.
+///
+/// - The origin vector (first column) and columns in `_end_members` give points
+/// in
+///   composition space as species number per unit cell
+/// - The number of rows in `_origin_and_end_members` should match
+///   the size of `_components`.
+///
+CompositionConverter::CompositionConverter(
+    std::vector<std::string> const &_components,
+    Eigen::MatrixXd _origin_and_end_members,
+    std::set<std::string> const &_vacancy_names)
+    : CompositionConverter(
+          _components, _origin_and_end_members.col(0),
+          _origin_and_end_members.rightCols(_origin_and_end_members.cols() - 1),
+          _vacancy_names) {}
+
 /// \brief The dimensionality of the composition space
 ///
 /// Examples:

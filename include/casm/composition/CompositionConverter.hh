@@ -27,6 +27,12 @@ class CompositionConverter {
                        std::set<std::string> const &_vacancy_names =
                            std::set<std::string>({"Va", "VA", "va"}));
 
+  /// \brief Construct a CompositionConverter
+  CompositionConverter(std::vector<std::string> const &_components,
+                       Eigen::MatrixXd _origin_and_end_members,
+                       std::set<std::string> const &_vacancy_names =
+                           std::set<std::string>({"Va", "VA", "va"}));
+
   /// \brief The dimensionality of the composition space
   size_type independent_compositions() const;
 
