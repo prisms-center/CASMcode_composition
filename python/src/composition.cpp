@@ -70,13 +70,17 @@ PYBIND11_MODULE(_composition, m) {
 
       - allowed_occs (``list[list[str]]``): For each sublattice, a vector of
         the names of components allowed to occupy th sublattice.
+
         - Note: the number of sublattices, ``n_sublat == len(allowed_occs)``
         - Note: ``len(occupation) == n_sublat * volume``, ``volume`` being the
           number of unit cells in the supercell
+
       - the sublattice index, ``b``, associated with a particular site,
         ``site_index`` in the occupation vector, can be determined from:
+
         - ``b = site_index / volume``
         - ``volume = len(occupation) / len(allowed_occs)``
+
       - This definition is consistent with the occupation vector begin organized
         in sublattice blocks:
 
@@ -254,12 +258,11 @@ PYBIND11_MODULE(_composition, m) {
 
     The method iterates over possible choices and checks:
 
-    - (1) does current choice of K end members span the full space?
-    - (2) try each of the chosen K end members as the origin, and let
-      remaining define composition axes... does this result in only positive
-      parametric composition parameters?
+    1. Does the current choice of K end members span the full space?
+    2. Try each of the chosen K end members as the origin, and let remaining define composition axes. Does this result in only positive parametric composition parameters?
 
-    If (1) and (2) are satisfied, save that choice of origin and end members.
+    If (1) and (2) are satisfied, that choice of origin and end members are
+    included in the results.
 
     Parameters
     ----------
@@ -420,8 +423,9 @@ PYBIND11_MODULE(_composition, m) {
 
       .. math::
 
-          \vec{n} = \vec{n}_0 + \mathbf{Q} @ \vec{x}
-          \vec{x} = \mathbf{R}^{\mathsf{T} @ (\vec{n} - \vec{n}_0)
+          \vec{n} = \vec{n}_0 + \mathbf{Q} \vec{x}
+
+          \vec{x} = \mathbf{R}^{\mathsf{T}} (\vec{n} - \vec{n}_0)
 
       where:
 
@@ -431,7 +435,7 @@ PYBIND11_MODULE(_composition, m) {
       - :math:`s`: The number of component species (``n_components``).
       - :math:`k`: The number of independent composition axes (``k``).
       - :math:`Q`: Matrix of shape=(:math:`s`, :math:`k`), with columns representing the end member compositions, as number of each component species per unit cell, for each independent composition axes.
-      - :math:`R`: Matrix of shape=(:math:`s`, :math:`k`), with columns forming the dual-spanning basis of Q, such that :math:`\mathbf{R}^{\mathsf{T}\mathbf{Q} = \mathbf{Q}^{\mathsf{T}\mathbf{R} = \mathbf{I}`.
+      - :math:`R`: Matrix of shape=(:math:`s`, :math:`k`), with columns forming the dual-spanning basis of Q, such that :math:`\mathbf{R}^{\mathsf{T}}\mathbf{Q} = \mathbf{Q}^{\mathsf{T}}\mathbf{R} = \mathbf{I}`.
 
       )pbdoc")
       .def(py::init<std::vector<std::string> const &, Eigen::MatrixXd,
@@ -465,10 +469,9 @@ PYBIND11_MODULE(_composition, m) {
             report_and_throw_if_invalid(parser, CASM::log(), error_if_invalid);
             return *parser.value;
           },
-          "Construct a CompositionConverter from a Python dict. The "
-          "`Composition Axes reference "
-          "<https://prisms-center.github.io/CASMcode_docs/formats/casm/clex/"
-          "CompositionAxes/>`_ documents the expected format.")
+          R"pbdoc(
+          Construct a CompositionConverter from a Python dict. The `Composition Axes reference <https://prisms-center.github.io/CASMcode_docs/formats/casm/clex/CompositionAxes/>`_ documents the expected format.
+          )pbdoc")
       .def(
           "to_dict",
           [](composition::CompositionConverter const &m) {
@@ -476,19 +479,26 @@ PYBIND11_MODULE(_composition, m) {
             to_json(m, json);
             return static_cast<nlohmann::json>(json);
           },
-          "Represent a CompositionConverter as a Python dict. The `Composition "
-          "Axes reference "
-          "<https://prisms-center.github.io/CASMcode_docs/formats/casm/clex/"
-          "CompositionAxes/>`_ documents the format.")
+          R"pbdoc(
+          Represent a CompositionConverter as a Python dict. The `Composition Axes reference <https://prisms-center.github.io/CASMcode_docs/formats/casm/clex/CompositionAxes/>`_ documents the format.
+          )pbdoc")
       .def("components", &composition::CompositionConverter::components,
-           "The order of components in mol composition vectors.")
+           R"pbdoc(
+           The order of components in mol composition vectors.
+           )pbdoc")
       .def("independent_compositions",
            &composition::CompositionConverter::independent_compositions,
-           "The dimensionality of the composition space, :math:`k`.")
+           R"pbdoc(
+           The dimensionality of the composition space, :math:`k`.
+           )pbdoc")
       .def("axes", &composition::CompositionConverter::axes,
-           "A list \"a\", \"b\", ... of size ``independent_compositions()``.")
+           R"pbdoc(
+           A list ``["a", "b", ...]`` of size :math:`k`.
+           )pbdoc")
       .def("origin", &composition::CompositionConverter::origin,
-           "The mol composition of the parameteric composition axes origin.")
+           R"pbdoc(
+           The mol composition of the parameteric composition axes origin.
+           )pbdoc")
       .def(
           "end_member", &composition::CompositionConverter::end_member,
           py::arg("i"),
@@ -498,52 +508,72 @@ PYBIND11_MODULE(_composition, m) {
           [](composition::CompositionConverter const &m) {
             return m.dparam_dmol();
           },
-          "Return the matrix :math:`R^{\mathsf{T}`.")
+          R"pbdoc(
+          Return the matrix :math:`R^{\mathsf{T}}`.
+          )pbdoc")
       .def("matrixQ", &composition::CompositionConverter::dmol_dparam,
-           "Return the matrix  :math:`Q`.")
+           R"pbdoc(
+           Return the matrix  :math:`Q`.
+           )pbdoc")
       .def("param_composition",
            &composition::CompositionConverter::param_composition, py::arg("n"),
-           "Convert number per unit cell, :math:`\vec{n}`, to parametric "
-           "composition, :math:`\vec{x}`.")
+           R"pbdoc(
+           Convert number per unit cell, :math:`\vec{n}`, to parametric composition, :math:`\vec{x}`.
+           )pbdoc")
       .def("mol_composition",
            &composition::CompositionConverter::mol_composition, py::arg("x"),
-           "Convert parametric composition, :math:`\vec{x}`, to number per "
-           "unit cell, :math:`\vec{n}`.")
+           R"pbdoc(
+           Convert parametric composition, :math:`\vec{x}`, to number per unit cell, :math:`\vec{n}`.
+           )pbdoc")
       .def("dparam_composition",
            &composition::CompositionConverter::dparam_composition,
            py::arg("dn"),
-           "Convert a change in number per unit cell, :math:`d\vec{n}`, to "
-           "change parametric composition, :math:`d\vec{x}`.")
+           R"pbdoc(
+           Convert a change in number per unit cell, :math:`d\vec{n}`, to change in parametric composition, :math:`d\vec{x}`.
+           )pbdoc")
       .def("dmol_composition",
            &composition::CompositionConverter::dmol_composition, py::arg("dx"),
-           "Convert a change in parametric composition, :math:`d\vec{x}`, to a "
-           "change in number per unit cell, :math:`d\vec{n}`.")
+           R"pbdoc(
+           Convert a change in parametric composition, :math:`d\vec{x}`, to a change in number per unit cell, :math:`d\vec{n}`.
+           )pbdoc")
       .def("param_chem_pot", &composition::CompositionConverter::param_chem_pot,
-           py::arg("chem_pot"), "Convert :math:`dG/dn` to :math:`dG/dx`.")
+           py::arg("chem_pot"),
+           R"pbdoc(
+           Convert :math:`dG/dn` to :math:`dG/dx`.
+           )pbdoc")
       .def("mol_formula", &composition::CompositionConverter::mol_formula,
-           "Return formula for :math:`\vec{n}` in terms of :math:`\vec{x}` "
-           "(ex: \"A(a)B(1-a)\").")
+           R"pbdoc(
+           Return formula for :math:`\vec{n}` in terms of :math:`\vec{x}` (ex: \"A(a)B(1-a)\").
+           )pbdoc")
       .def("param_formula", &composition::CompositionConverter::param_formula,
-           "Return formula for :math:`\vec{x}` in terms of :math:`\vec{n}` "
-           "(ex: \"a(0.5+0.5A-0.5B)\").")
+           R"pbdoc(
+           Return formula for :math:`\vec{x}` in terms of :math:`\vec{n}` (ex: \"a(0.5+0.5A-0.5B)\").
+           )pbdoc")
       .def("origin_formula", &composition::CompositionConverter::param_formula,
-           "Return formula for the origin composition, :math:`\vec{n}_0`.")
+           R"pbdoc(
+           Return formula for the origin composition, :math:`\vec{n}_0`.
+           )pbdoc")
       .def("end_member_formula",
            &composition::CompositionConverter::end_member_formula, py::arg("i"),
-           "Return formula for the i-th end member, :math:`q_i`.")
+           R"pbdoc(
+           Return formula for the i-th end member, :math:`q_i`.
+           )pbdoc")
       .def("param_component_formula",
            &composition::CompositionConverter::comp_formula, py::arg("i"),
-           "Return formula the i-th parametric composition component, "
-           ":math:`x_i`, in terms of :math:`\vec{n}`.")
+           R"pbdoc(
+           Return formula the i-th parametric composition component, :math:`x_i`, in terms of :math:`\vec{n}`.
+           )pbdoc")
       .def("mol_component_formula",
            &composition::CompositionConverter::comp_n_formula, py::arg("i"),
-           "Return formula the i-th mol composition component, :math:`n_i`, in "
-           "terms of :math:`\vec{x}`.")
+           R"pbdoc(
+           Return formula the i-th mol composition component, :math:`n_i`, in terms of :math:`\vec{x}`.
+           )pbdoc")
       .def("param_chem_pot_formula",
            &composition::CompositionConverter::param_chem_pot_formula,
            py::arg("i"),
-           "Return formula the parametric composition conjugate potential in "
-           "terms of the chemical potentials.");
+           R"pbdoc(
+           Return formula the parametric composition conjugate potential in terms of the chemical potentials.
+           )pbdoc");
 
   m.def("make_composition_space", &composition::composition_space,
         py::arg("components"), py::arg("allowed_occs"),
@@ -602,7 +632,7 @@ PYBIND11_MODULE(_composition, m) {
       Parameters
       ----------
       param_chem_pot : numpy.ndarray[numpy.float64[n_composition_axes, 1]]
-          The parametric chemical potential, :math:`\vec{\tilde{\mu}} = \mathbf{Q}^{\mathsf{T}\vec{\mu}`, which is conjugate to the parametric composition :math:`\vec{x}`.
+          The parametric chemical potential, :math:`\vec{\tilde{\mu}} = \mathbf{Q}^{\mathsf{T}}\vec{\mu}`, which is conjugate to the parametric composition :math:`\vec{x}`.
       composition_converter : ~libcasm.composition.CompositionConverter
           A CompositionConverter instance.
 
