@@ -1,10 +1,11 @@
 import numpy as np
+
 from libcasm.composition import make_standard_origin_and_end_members
 
 
 def is_column_permutation(A, B):
     if A.shape != B.shape:
-        return false
+        return False
 
     found = set()
     for i in range(A.shape[1]):
@@ -19,7 +20,6 @@ def is_column_permutation(A, B):
 def test_make_standard_origin_and_end_members_1():
     allowed_occs = [["A", "B"]]
     components = ["A", "B"]
-    tol = 1e-14
 
     standard_origin_and_end_members = make_standard_origin_and_end_members(
         components, allowed_occs
@@ -44,7 +44,6 @@ def test_make_standard_origin_and_end_members_1():
 def test_make_standard_origin_and_end_members_2():
     allowed_occs = [["A", "B"], ["B", "A"]]
     components = ["A", "B"]
-    tol = 1e-14
 
     standard_origin_and_end_members = make_standard_origin_and_end_members(
         components, allowed_occs
@@ -69,7 +68,6 @@ def test_make_standard_origin_and_end_members_2():
 def test_make_standard_origin_and_end_members_3():
     allowed_occs = [["A", "B"], ["B", "C"], ["C", "D"]]
     components = ["A", "B", "C", "D"]
-    tol = 1e-14
 
     standard_origin_and_end_members = make_standard_origin_and_end_members(
         components, allowed_occs

@@ -1,5 +1,7 @@
 #include "casm/composition/composition_space.hh"
 
+#include "casm/casm_io/container/stream_io.hh"
+
 namespace CASM {
 namespace composition {
 
@@ -52,10 +54,14 @@ IntType _nchoosek(IntType n, IntType k) {
 // Works for signed and unsigned types
 template <typename IntType>
 std::vector<IntType> _index_to_kcombination(IntType ind, IntType k) {
+  IntType ind_in = ind;
+  IntType k_in = k;
+
   std::vector<IntType> result;
   result.reserve(k);
-  IntType n;
-  IntType big, bigger;
+  IntType n = 0;
+  IntType big = 0;
+  IntType bigger = 0;
   for (; k > 0; --k) {
     n = k;
     bigger = 1;
@@ -69,6 +75,8 @@ std::vector<IntType> _index_to_kcombination(IntType ind, IntType k) {
   // check:
   for (int i = 0; i < result.size() - 1; ++i) {
     if (result[i + 1] >= result[i]) {
+      std::cout << "(" << ind_in << "," << k_in << "): " << result << std::endl
+                << std::endl;
       throw std::runtime_error("Error in _index_to_kcombination");
     }
   }
