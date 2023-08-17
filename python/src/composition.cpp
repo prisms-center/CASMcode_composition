@@ -79,7 +79,7 @@ PYBIND11_MODULE(_composition, m) {
         - ``b = site_index / volume``
         - ``volume = len(occupation) / len(allowed_occs)``
 
-      - This definition is consistent with the occupation vector begin organized
+      - This definition is consistent with the occupation vector being organized
         in sublattice blocks:
 
         ::
