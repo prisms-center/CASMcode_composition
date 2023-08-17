@@ -59,8 +59,9 @@ std::vector<IntType> _index_to_kcombination(IntType ind, IntType k) {
 
   std::vector<IntType> result;
   result.reserve(k);
-  IntType n;
-  IntType big, bigger;
+  IntType n = 0;
+  IntType big = 0;
+  IntType bigger = 0;
   for (; k > 0; --k) {
     n = k;
     bigger = 1;
