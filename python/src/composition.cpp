@@ -50,8 +50,6 @@ PYBIND11_MODULE(_composition, m) {
 
     )pbdoc";
 
-  m.attr("TOL") = TOL;
-
   py::class_<composition::CompositionCalculator>(m, "CompositionCalculator",
                                                  R"pbdoc(
       Calculate composition from occupation vectors
@@ -271,7 +269,7 @@ PYBIND11_MODULE(_composition, m) {
     allowed_occs : list[list[str]]
         For each sublattice, a vector of components allowed to occupy
         the sublattice.
-    tol : float = TOL
+    tol : float = :data:`~libcasm.casmglobal.TOL`
         Tolerance for comparison. Used to find composition axes such
         that the parametric composition parameters are non-negative.
 
@@ -590,7 +588,7 @@ PYBIND11_MODULE(_composition, m) {
           For each sublattice, a vector of components allowed to occupy the sublattice.
       vacancy_names : set[str]
           Set of component names that should be recognized as vacancies. An exception is raised if more than one component is a vacancy.
-      tol : double = TOL
+      tol : double = :data:`~libcasm.casmglobal.TOL`
           Floating point tolerance.
 
       Returns
@@ -614,7 +612,7 @@ PYBIND11_MODULE(_composition, m) {
           For each sublattice, a vector of components allowed to occupy the sublattice.
       vacancy_names : set[str]
           Set of component names that should be recognized as vacancies. An exception is raised if more than one component is a vacancy.
-      tol : double = TOL
+      tol : double = :data:`~libcasm.casmglobal.TOL`
           Floating point tolerance.
 
       Returns
