@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [2.0a1] - 2023-08-17
 
 This release separates out casm/composition from CASM v1. It creates a Python package, libcasm.composition, that enables using casm/composition and may be installed via pip install, using scikit-build, CMake, and pybind11. This release also includes API documentation for using libcasm.composition, built using Sphinx.
 
