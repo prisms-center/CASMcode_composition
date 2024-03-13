@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
       - name: Set up requirements & configuration variables
         run: |
@@ -36,7 +36,7 @@ jobs:
 
       - name: upload libcasm-composition-macos-latest-x86_64-dist
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libcasm-composition-macos-latest-x86_64-dist
           path: dist
