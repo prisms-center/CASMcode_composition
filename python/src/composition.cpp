@@ -547,7 +547,7 @@ PYBIND11_MODULE(_composition, m) {
            R"pbdoc(
            Return formula for :math:`\vec{x}` in terms of :math:`\vec{n}` (ex: \"a(0.5+0.5A-0.5B)\").
            )pbdoc")
-      .def("origin_formula", &composition::CompositionConverter::param_formula,
+      .def("origin_formula", &composition::CompositionConverter::origin_formula,
            R"pbdoc(
            Return formula for the origin composition, :math:`\vec{n}_0`.
            )pbdoc")
