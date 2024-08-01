@@ -100,6 +100,10 @@ Eigen::VectorXd CompositionConverter::origin() const { return m_origin; }
 /// - Matches order from components()
 ///
 Eigen::VectorXd CompositionConverter::end_member(size_type i) const {
+  if (i >= m_end_members.cols()) {
+    throw std::runtime_error(
+        std::string("Error: Requested end member index is too large."));
+  }
   return m_end_members.col(i);
 }
 
@@ -276,7 +280,11 @@ std::string CompositionConverter::param_formula() const {
 /// \brief Return formula for comp(i) in terms of comp_n(A), comp_n(B), ...
 std::string CompositionConverter::comp_formula(size_type i) const {
   // comp(i) = m_to_x(i,j)*(comp_n(j) - m_origin(j)) + ...
-
+  if (i >= independent_compositions()) {
+    throw std::runtime_error(
+        std::string("Error: Requested parametric component is too large."));
+  }
+  
   std::stringstream ss;
 
   auto comp_x_str = [&]() { return "comp(" + comp_var(i) + ")"; };
@@ -335,7 +343,10 @@ std::string CompositionConverter::comp_formula(size_type i) const {
 /// ...
 std::string CompositionConverter::comp_n_formula(size_type i) const {
   // comp_n(i) = m_origin(j) + m_to_n(i,j)*comp(j) + ...
-
+  if (i >= m_components.size()) {
+    throw std::runtime_error(
+        std::string("Error: Requested component index is too large."));
+  }
   std::stringstream ss;
 
   auto comp_x_str = [&](int j) { return "comp(" + comp_var(j) + ")"; };
@@ -404,7 +415,11 @@ std::string CompositionConverter::param_chem_pot_formula(size_type i) const {
   // dG = chem_pot.trans * dn = chem_pot.trans * m_to_n * dx
   // -> param_chem_pot.trans = chem_pot.trans * m_to_n
   // -> param_chem_pot = m_to_n.trans * chem_pot
-
+  if (i >= independent_compositions()) {
+    throw std::runtime_error(
+        std::string("Error: Requested parametric chemical potential index is too large."));
+  }
+  
   std::stringstream ss;
 
   auto print_chem_pot = [&](int j) {
@@ -462,6 +477,10 @@ std::string CompositionConverter::origin_formula() const {
 
 /// \brief Return formula for end member
 std::string CompositionConverter::end_member_formula(size_type i) const {
+  if (i >= m_end_members.cols()) {
+    throw std::runtime_error(
+        std::string("Error: Requested end member index is too large."));
+  }
   return _n_formula(m_end_members.col(i));
 }
 
