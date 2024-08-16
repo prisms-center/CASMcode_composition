@@ -11,3 +11,7 @@ from ._composition import (
     make_standard_origin_and_end_members,
     set_occupant,
 )
+
+from ._formation_energy_calculator import (
+    FormationEnergyCalculator,
+)
