@@ -487,7 +487,7 @@ PYBIND11_MODULE(_composition, m) {
       .def("independent_compositions",
            &composition::CompositionConverter::independent_compositions,
            R"pbdoc(
-           The dimensionality of the composition space, :math:`k`.
+           The dimensionality of the composition space, :math:`k`. This is the number of parametric composition axes.
            )pbdoc")
       .def("axes", &composition::CompositionConverter::axes,
            R"pbdoc(
@@ -547,7 +547,7 @@ PYBIND11_MODULE(_composition, m) {
            R"pbdoc(
            Return formula for :math:`\vec{x}` in terms of :math:`\vec{n}` (ex: \"a(0.5+0.5A-0.5B)\").
            )pbdoc")
-      .def("origin_formula", &composition::CompositionConverter::param_formula,
+      .def("origin_formula", &composition::CompositionConverter::origin_formula,
            R"pbdoc(
            Return formula for the origin composition, :math:`\vec{n}_0`.
            )pbdoc")
@@ -559,18 +559,18 @@ PYBIND11_MODULE(_composition, m) {
       .def("param_component_formula",
            &composition::CompositionConverter::comp_formula, py::arg("i"),
            R"pbdoc(
-           Return formula the i-th parametric composition component, :math:`x_i`, in terms of :math:`\vec{n}`.
+           Return formula for the i-th parametric composition component, :math:`x_i`, in terms of :math:`\vec{n}`.
            )pbdoc")
       .def("mol_component_formula",
            &composition::CompositionConverter::comp_n_formula, py::arg("i"),
            R"pbdoc(
-           Return formula the i-th mol composition component, :math:`n_i`, in terms of :math:`\vec{x}`.
+           Return formula for the i-th mol composition component, :math:`n_i`, in terms of :math:`\vec{x}`.
            )pbdoc")
       .def("param_chem_pot_formula",
            &composition::CompositionConverter::param_chem_pot_formula,
            py::arg("i"),
            R"pbdoc(
-           Return formula the parametric composition conjugate potential in terms of the chemical potentials.
+           Return formula for the parametric composition conjugate potential in terms of the chemical potentials.
            )pbdoc");
 
   m.def("make_composition_space", &composition::composition_space,
