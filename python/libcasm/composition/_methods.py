@@ -68,7 +68,7 @@ def make_normalized_origin_and_end_members(
 
 def make_standard_axes(
     allowed_occs: list[list[str]],
-    components: Optional[list[str]] = None,
+    components: Union[str, list[str], None] = None,
     vacancy_names: Optional[set[str]] = None,
     normalize: bool = True,
     tol: float = libcasm.casmglobal.TOL,
