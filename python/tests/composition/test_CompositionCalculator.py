@@ -270,10 +270,43 @@ def test_FormationEnergyCalculator_io_2():
     assert data["components"] == comp_calculator.components()
     assert "allowed_occs" in data
     assert data["allowed_occs"] == comp_calculator.allowed_occs()
+    assert "vacancy_names" not in data
+
+    comp_calculator_in = CompositionCalculator.from_dict(data)
+    assert comp_calculator_in.components() == comp_calculator.components()
+    assert comp_calculator_in.allowed_occs() == comp_calculator.allowed_occs()
+    assert comp_calculator_in.vacancy_names() == comp_calculator.vacancy_names()
+
+    import io
+    from contextlib import redirect_stdout
+
+    string_io = io.StringIO()
+    with redirect_stdout(string_io):
+        print(comp_calculator)
+    out = string_io.getvalue()
+    assert "components" in out
+    assert "allowed_occs" in out
+    assert "vacancy_names" not in out
+
+
+def test_FormationEnergyCalculator_io_3():
+    components = ["A", "B", "X"]
+    allowed_occs = [["A", "B", "X"], ["A", "B", "X"]]
+    vacancy_names = set(["Z", "X", "Y"])
+
+    comp_calculator = CompositionCalculator(components, allowed_occs, vacancy_names)
+    assert comp_calculator.vacancy_names() == set(["X"])
+
+    assert isinstance(comp_calculator, CompositionCalculator)
+
+    data = comp_calculator.to_dict()
+    assert isinstance(data, dict)
+    assert "components" in data
+    assert data["components"] == comp_calculator.components()
+    assert "allowed_occs" in data
+    assert data["allowed_occs"] == comp_calculator.allowed_occs()
     assert "vacancy_names" in data
-    assert sorted(data["vacancy_names"]) == sorted(
-        list(comp_calculator.vacancy_names())
-    )
+    assert set(data["vacancy_names"]) == comp_calculator.vacancy_names()
 
     comp_calculator_in = CompositionCalculator.from_dict(data)
     assert comp_calculator_in.components() == comp_calculator.components()

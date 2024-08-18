@@ -29,6 +29,28 @@ namespace CASMpy {
 
 using namespace CASM;
 
+// TODO: rename and move to composition/io/json
+jsonParser &calculator_to_json(composition::CompositionCalculator const &m,
+                               jsonParser &json) {
+  json = jsonParser::object();
+  json["components"] = m.components();
+  json["allowed_occs"] = m.allowed_occs();
+
+  // only include vacancy names if there are any not in the defaults
+  bool custom_vacancy_names = false;
+  std::set<std::string> default_names = {"Va", "VA", "va"};
+  for (auto const &name : m.vacancy_names()) {
+    if (default_names.find(name) == default_names.end()) {
+      custom_vacancy_names = true;
+      break;
+    }
+  }
+  if (custom_vacancy_names) {
+    json["vacancy_names"] = m.vacancy_names();
+  }
+  return json;
+}
+
 }  // namespace CASMpy
 
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
@@ -251,12 +273,7 @@ PYBIND11_MODULE(_composition, m) {
           [](composition::CompositionCalculator const &m) {
             std::stringstream ss;
             jsonParser json;
-            json["components"] = m.components();
-            json["allowed_occs"] = m.allowed_occs();
-            if (m.vacancy_names() !=
-                std::set<std::string>({"Va", "VA", "va"})) {
-              json["vacancy_names"] = m.vacancy_names();
-            }
+            calculator_to_json(m, json);
             return static_cast<nlohmann::json>(json);
           },
           R"pbdoc(
@@ -270,11 +287,7 @@ PYBIND11_MODULE(_composition, m) {
       .def("__repr__", [](composition::CompositionCalculator const &m) {
         std::stringstream ss;
         jsonParser json;
-        json["components"] = m.components();
-        json["allowed_occs"] = m.allowed_occs();
-        if (m.vacancy_names() != std::set<std::string>({"Va", "VA", "va"})) {
-          json["vacancy_names"] = m.vacancy_names();
-        }
+        calculator_to_json(m, json);
         ss << json;
         return ss.str();
       });

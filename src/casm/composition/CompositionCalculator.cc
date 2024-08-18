@@ -15,8 +15,6 @@ CompositionCalculator::CompositionCalculator(
     std::vector<std::vector<std::string>> const &_allowed_occs,
     std::set<std::string> const &_vacancy_names)
     : m_components(_components),
-      m_allowed_occs(_allowed_occs),
-      m_vacancy_names(_vacancy_names),
       m_occ_to_component_index_converter(
           make_occ_index_to_component_index_converter(_components,
                                                       _allowed_occs)),
@@ -42,12 +40,27 @@ std::vector<std::string> CompositionCalculator::components() const {
 /// \brief The names of allowed occupants for each sublattice
 std::vector<std::vector<std::string>> CompositionCalculator::allowed_occs()
     const {
-  return m_allowed_occs;
+  std::vector<std::vector<std::string>> _allowed_occs;
+  for (Index b = 0; b < m_occ_to_component_index_converter.size(); ++b) {
+    std::vector<std::string> sublat_occs;
+    for (Index occ_index = 0;
+         occ_index < m_occ_to_component_index_converter[b].size();
+         ++occ_index) {
+      sublat_occs.push_back(
+          m_components[m_occ_to_component_index_converter[b][occ_index]]);
+    }
+    _allowed_occs.push_back(sublat_occs);
+  }
+  return _allowed_occs;
 }
 
 /// \brief The names of vacancy components
 std::set<std::string> CompositionCalculator::vacancy_names() const {
-  return m_vacancy_names;
+  std::set<std::string> _vacancy_names;
+  if (m_vacancy_allowed) {
+    _vacancy_names.insert(m_components[m_vacancy_index]);
+  }
+  return _vacancy_names;
 }
 
 /// \brief The number of sublattices
