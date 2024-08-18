@@ -94,10 +94,22 @@ class CompositionConverter {
   std::string comp_n_formula(size_type i) const;
 
   /// \brief Return formula for param_chem_pot(i) in terms of chem_pot(A),
-  /// chem_pot(B), ...
+  /// chem_pot(B), ..., assuming chem_pot(Va) == 0
   std::string param_chem_pot_formula(size_type i) const;
 
+  /// \brief Return formula for param_chem_pot(i) in terms of chem_pot(A),
+  /// chem_pot(B), ..., including chem_pot(Va)
+  std::string param_chem_pot_formula_with_va(size_type i) const;
+
  private:
+  /// \brief Return formula for param_chem_pot(i) in terms of chem_pot(A),
+  /// chem_pot(B), ...
+  ///
+  /// Ex: param_chem_pot(a) = c0*chem_pot(A) + c1*chem_pot(B) + ...
+  ///
+  /// If include_va == false, Assumes chem_pot(Va) == 0
+  std::string _param_chem_pot_formula(size_type i, bool include_va) const;
+
   /// \brief Check that origin and end member vectors have same size as the
   /// number of components
   void _check_size(Eigen::MatrixXd const &vec) const;

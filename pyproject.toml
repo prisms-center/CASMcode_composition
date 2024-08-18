@@ -30,6 +30,7 @@ classifiers = [
 dependencies = [
   "libcasm-global>=2.0.5",
   "numpy",
+  "tabulate",
 ]
 
 [project.urls]

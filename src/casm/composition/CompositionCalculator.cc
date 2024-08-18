@@ -15,6 +15,8 @@ CompositionCalculator::CompositionCalculator(
     std::vector<std::vector<std::string>> const &_allowed_occs,
     std::set<std::string> const &_vacancy_names)
     : m_components(_components),
+      m_allowed_occs(_allowed_occs),
+      m_vacancy_names(_vacancy_names),
       m_occ_to_component_index_converter(
           make_occ_index_to_component_index_converter(_components,
                                                       _allowed_occs)),
@@ -35,6 +37,17 @@ CompositionCalculator::CompositionCalculator(
 /// \brief The order of components in composition vector results
 std::vector<std::string> CompositionCalculator::components() const {
   return m_components;
+}
+
+/// \brief The names of allowed occupants for each sublattice
+std::vector<std::vector<std::string>> CompositionCalculator::allowed_occs()
+    const {
+  return m_allowed_occs;
+}
+
+/// \brief The names of vacancy components
+std::set<std::string> CompositionCalculator::vacancy_names() const {
+  return m_vacancy_names;
 }
 
 /// \brief The number of sublattices

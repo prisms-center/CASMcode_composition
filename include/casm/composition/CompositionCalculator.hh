@@ -49,6 +49,12 @@ class CompositionCalculator {
   /// \brief The order of components in composition vector results
   std::vector<std::string> components() const;
 
+  /// \brief The names of allowed occupants for each sublattice
+  std::vector<std::vector<std::string>> allowed_occs() const;
+
+  /// \brief The names of vacancy components
+  std::set<std::string> vacancy_names() const;
+
   /// \brief The number of sublattices
   Index n_sublat() const;
 
@@ -84,6 +90,12 @@ class CompositionCalculator {
   // the result. Must be consistent with occ_to_component_index_converter.
   // Vacancy components are detected using `xtal::is_vacancy`.
   std::vector<std::string> m_components;
+
+  // Names of allowed occupants for each sublattice
+  std::vector<std::vector<std::string>> m_allowed_occs;
+
+  // Names of vacancy components
+  std::set<std::string> m_vacancy_names;
 
   // Lookup table for sublattice index and occupant index to component index.
   std::vector<std::vector<Index>> m_occ_to_component_index_converter;

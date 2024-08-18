@@ -284,7 +284,7 @@ std::string CompositionConverter::comp_formula(size_type i) const {
     throw std::runtime_error(
         std::string("Error: Requested parametric component is too large."));
   }
-  
+
   std::stringstream ss;
 
   auto comp_x_str = [&]() { return "comp(" + comp_var(i) + ")"; };
@@ -401,6 +401,29 @@ std::string CompositionConverter::comp_n_formula(size_type i) const {
 ///
 /// Assumes chem_pot(Va) == 0
 std::string CompositionConverter::param_chem_pot_formula(size_type i) const {
+  bool include_va = false;
+  return _param_chem_pot_formula(i, include_va);
+}
+
+/// \brief Return formula for param_chem_pot(i) in terms of chem_pot(A),
+/// chem_pot(B), ..., including chem_pot(Va)
+///
+/// Ex: param_chem_pot(a) = c0*chem_pot(A) + c1*chem_pot(B) + ...
+///
+std::string CompositionConverter::param_chem_pot_formula_with_va(
+    size_type i) const {
+  bool include_va = true;
+  return _param_chem_pot_formula(i, include_va);
+}
+
+/// \brief Return formula for param_chem_pot(i) in terms of chem_pot(A),
+/// chem_pot(B), ...
+///
+/// Ex: param_chem_pot(a) = c0*chem_pot(A) + c1*chem_pot(B) + ...
+///
+/// If include_va == false, Assumes chem_pot(Va) == 0
+std::string CompositionConverter::_param_chem_pot_formula(
+    size_type i, bool include_va) const {
   // param_chem_pot = m_to_n.transpose() * chem_pot;
 
   // n = m_origin + m_to_n * x
@@ -416,10 +439,10 @@ std::string CompositionConverter::param_chem_pot_formula(size_type i) const {
   // -> param_chem_pot.trans = chem_pot.trans * m_to_n
   // -> param_chem_pot = m_to_n.trans * chem_pot
   if (i >= independent_compositions()) {
-    throw std::runtime_error(
-        std::string("Error: Requested parametric chemical potential index is too large."));
+    throw std::runtime_error(std::string(
+        "Error: Requested parametric chemical potential index is too large."));
   }
-  
+
   std::stringstream ss;
 
   auto print_chem_pot = [&](int j) {
@@ -434,7 +457,8 @@ std::string CompositionConverter::param_chem_pot_formula(size_type i) const {
 
     // print nothing if n == 0
 
-    if (almost_zero(coeff) || m_vacancy_names.count(m_components[j])) {
+    if (almost_zero(coeff) ||
+        (!include_va && m_vacancy_names.count(m_components[j]))) {
       continue;
     }
 
@@ -448,7 +472,11 @@ std::string CompositionConverter::param_chem_pot_formula(size_type i) const {
 
     // print '-A' if n == -1
     else if (almost_zero(coeff + 1)) {
-      ss << "- " << print_chem_pot(j);
+      if (first_term) {
+        ss << "-" << print_chem_pot(j);
+      } else {
+        ss << "- " << print_chem_pot(j);
+      }
     }
 
     // print 'nA' or '+nA' if n > 0

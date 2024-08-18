@@ -1,6 +1,10 @@
 import numpy as np
 
-from libcasm.composition import CompositionConverter, make_exchange_chemical_potential
+from libcasm.composition import (
+    CompositionConverter,
+    make_exchange_chemical_potential,
+    pretty_json,
+)
 
 
 def test_CompositionConverter_1():
@@ -207,3 +211,39 @@ def test_make_exchange_chemical_potential():
         ]
     )
     assert np.allclose(exchange_chemical_potential, expected)
+
+
+def test_CompositionConverter_io():
+    # allowed_occs = [["A", "B"], ["B", "C"], ["C", "D"]]
+    components = ["A", "B", "C", "D"]
+
+    origin_and_end_members = np.array(
+        [
+            [0, 2, 1, 0],  # origin
+            [1, 1, 1, 0],  # end member, 'a'
+            [0, 2, 0, 1],  # end member, 'b'
+            [0, 1, 2, 0],  # end member, 'c'
+        ]
+    ).transpose()
+
+    f = CompositionConverter(components, origin_and_end_members)
+
+    assert isinstance(f, CompositionConverter)
+
+    data = f.to_dict()
+    print(pretty_json(data))
+    assert isinstance(data, dict)
+    assert "mol_formula" in data
+
+    f_in = CompositionConverter.from_dict(data)
+    assert np.allclose(f_in.matrixQ(), f.matrixQ())
+    assert "mol_formula" in data
+
+    import io
+    from contextlib import redirect_stdout
+
+    string_io = io.StringIO()
+    with redirect_stdout(string_io):
+        print(f)
+    out = string_io.getvalue()
+    assert "mol_formula" in out

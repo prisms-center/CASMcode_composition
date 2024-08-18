@@ -1,4 +1,5 @@
 #include <pybind11/eigen.h>
+#include <pybind11/iostream.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -110,9 +111,19 @@ PYBIND11_MODULE(_composition, m) {
           An exception is raised if more than one component is a vacancy.
       )pbdoc")
       .def("components", &composition::CompositionCalculator::components,
-           "The order of components in composition vector results.")
+           R"pbdoc(
+           list[str]: The order of components in composition vector results.
+           )pbdoc")
+      .def("allowed_occs", &composition::CompositionCalculator::allowed_occs,
+           R"pbdoc(
+           list[list[str]]: The names of allowed occupants for each sublattice.
+           )pbdoc")
+      .def("vacancy_names", &composition::CompositionCalculator::vacancy_names,
+           R"pbdoc(
+           set[str]: The names of vacancy components.
+           )pbdoc")
       .def("n_sublat", &composition::CompositionCalculator::n_sublat,
-           "The number of sublattices.")
+           "int: The number of sublattices.")
       .def(
           "mean_num_each_component",
           [](composition::CompositionCalculator const &m,
@@ -200,7 +211,73 @@ PYBIND11_MODULE(_composition, m) {
           -------
           species_frac: numpy.ndarray[numpy.float64[n_components, 1]]
               Composition as species fraction, with [Va] = 0.0.
-          )pbdoc");
+          )pbdoc")
+      .def_static(
+          "from_dict",
+          [](const nlohmann::json &data) {
+            // print errors and warnings to sys.stdout
+            py::scoped_ostream_redirect redirect;
+
+            jsonParser json{data};
+            std::vector<std::string> components;
+            from_json(components, json["components"]);
+            std::vector<std::vector<std::string>> allowed_occs;
+            from_json(allowed_occs, json["allowed_occs"]);
+            std::set<std::string> vacancy_names;
+            if (json.contains("vacancy_names")) {
+              from_json(vacancy_names, json["vacancy_names"]);
+            } else {
+              vacancy_names = std::set<std::string>({"Va", "VA", "va"});
+            }
+            return composition::CompositionCalculator(components, allowed_occs,
+                                                      vacancy_names);
+          },
+          R"pbdoc(
+          Construct a CompositionCalculator from a Python dict
+
+          Parameters
+          ----------
+          data: dict
+              A Python dict representing the CompositionCalculator.
+
+          Returns
+          -------
+          calculator: CompositionCalculator
+              A CompositionCalculator constructed from the dict.
+          )pbdoc",
+          py::arg("data"))
+      .def(
+          "to_dict",
+          [](composition::CompositionCalculator const &m) {
+            std::stringstream ss;
+            jsonParser json;
+            json["components"] = m.components();
+            json["allowed_occs"] = m.allowed_occs();
+            if (m.vacancy_names() !=
+                std::set<std::string>({"Va", "VA", "va"})) {
+              json["vacancy_names"] = m.vacancy_names();
+            }
+            return static_cast<nlohmann::json>(json);
+          },
+          R"pbdoc(
+          Represent a CompositionCalculator as a Python dict
+
+          Returns
+          -------
+          data: dict
+              A Python dict representing the CompositionCalculator.
+          )pbdoc")
+      .def("__repr__", [](composition::CompositionCalculator const &m) {
+        std::stringstream ss;
+        jsonParser json;
+        json["components"] = m.components();
+        json["allowed_occs"] = m.allowed_occs();
+        if (m.vacancy_names() != std::set<std::string>({"Va", "VA", "va"})) {
+          json["vacancy_names"] = m.vacancy_names();
+        }
+        ss << json;
+        return ss.str();
+      });
 
   m.def("get_occupant", &composition::get_occupant, py::arg("occupation"),
         py::arg("site_index"), py::arg("allowed_occs"),
@@ -460,6 +537,9 @@ PYBIND11_MODULE(_composition, m) {
       .def_static(
           "from_dict",
           [](const nlohmann::json &data) {
+            // print errors and warnings to sys.stdout
+            py::scoped_ostream_redirect redirect;
+
             jsonParser json{data};
             InputParser<composition::CompositionConverter> parser(json);
             std::runtime_error error_if_invalid{
@@ -480,6 +560,14 @@ PYBIND11_MODULE(_composition, m) {
           R"pbdoc(
           Represent a CompositionConverter as a Python dict. The `Composition Axes reference <https://prisms-center.github.io/CASMcode_docs/formats/casm/clex/CompositionAxes/>`_ documents the format.
           )pbdoc")
+      .def("__repr__",
+           [](composition::CompositionConverter const &m) {
+             std::stringstream ss;
+             jsonParser json;
+             to_json(m, json);
+             ss << json;
+             return ss.str();
+           })
       .def("components", &composition::CompositionConverter::components,
            R"pbdoc(
            The order of components in mol composition vectors.
@@ -566,11 +654,34 @@ PYBIND11_MODULE(_composition, m) {
            R"pbdoc(
            Return formula for the i-th mol composition component, :math:`n_i`, in terms of :math:`\vec{x}`.
            )pbdoc")
-      .def("param_chem_pot_formula",
-           &composition::CompositionConverter::param_chem_pot_formula,
-           py::arg("i"),
-           R"pbdoc(
-           Return formula for the parametric composition conjugate potential in terms of the chemical potentials.
+      //      .def("param_chem_pot_formula",
+      //           &composition::CompositionConverter::param_chem_pot_formula,
+      //           py::arg("i"),
+      //           R"pbdoc(
+      //           Return formula for the parametric composition conjugate
+      //           potential in terms of the chemical potentials. )pbdoc")
+      .def(
+          "param_chem_pot_formula",
+          [](composition::CompositionConverter const &m, int i,
+             bool include_va) {
+            if (include_va) {
+              return m.param_chem_pot_formula_with_va(i);
+            } else {
+              return m.param_chem_pot_formula(i);
+            }
+          },
+          py::arg("i"), py::arg("include_va") = false,
+          R"pbdoc(
+           Return formula for the parametric composition conjugate potential in terms
+           of the chemical potentials.
+
+           Parameters
+           ----------
+           i: int
+               The parametric composition axis index, starting from 0.
+           include_va: bool = False
+               If True, include chem_pot(Va) in output. If False (default),
+               assume chem_pot(Va) is 0.
            )pbdoc");
 
   m.def("make_composition_space", &composition::composition_space,
@@ -639,6 +750,16 @@ PYBIND11_MODULE(_composition, m) {
       exchange_chemical_potential : numpy.ndarray[numpy.float64[n_components, n_components]]
           The matrix, :math:`M`, with values :math:`M_{ij} = \mu_i - \mu_j`, at the given parametric chemical potential.
       )pbdoc");
+
+  m.def(
+      "pretty_json",
+      [](const nlohmann::json &data) -> std::string {
+        jsonParser json{data};
+        std::stringstream ss;
+        ss << json << std::endl;
+        return ss.str();
+      },
+      "Pretty-print JSON to string.", py::arg("data"));
 
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
