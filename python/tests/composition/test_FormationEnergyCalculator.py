@@ -1,79 +1,128 @@
-import json
 import numpy as np
-import libcasm.xtal as xtal
-from libcasm.composition import CompositionConverter, FormationEnergyCalculator
+
+from libcasm.composition import FormationEnergyCalculator
 
 
-def test_binary():
-    # read data
-    with open("li_ag_bcc_relax_vasp_data.json", "r") as f:
-        data = json.load(f)
-    true_formation_energies = np.array(
-        [i["formation_energy_per_atom"] for i in data.values()]
+def test_FormationEnergyCalculator_1():
+    energy_ref = np.array(
+        [
+            1.0,  # Reference state 1 energy
+            0.0,  # Reference state 2 energy
+            2.0,  # Reference state 3 energy
+        ]
     )
-    energies = np.array([i["energy_per_atom"] for i in data.values()])
-    comp = np.array([i["comp"] for i in data.values()]).reshape(1, -1)
-    ref_Ag_energy = -2.717411600000
-    ref_Li_energy = -1.904210800000
+    comp_ref = np.array(
+        [
+            [0.0, 0.0],  # Reference state 1 composition
+            [1.0, 0.0],  # Reference state 2 composition
+            [0.0, 1.0],  # Reference state 3 composition
+        ]
+    ).transpose()  # <-- comps as columns
 
-    # calculate formation energies
-    end_state_compositions = np.array([[0, 1]])  # Li=0, Li=1
-    end_state_energies = np.array([ref_Ag_energy, ref_Li_energy])
-    formation_energy_calculator = FormationEnergyCalculator(
-        end_state_compositions, end_state_energies
-    )
-    formation_energies = formation_energy_calculator.get_formation_energy(
-        points=comp, energies=energies
-    )
-    assert np.all(
-        np.isclose(formation_energies - true_formation_energies, 0, atol=1e-6)
+    f = FormationEnergyCalculator(
+        composition_ref=comp_ref,
+        energy_ref=energy_ref,
     )
 
+    assert f.independent_compositions == 2
 
-def test_quaternary():
-    # read data
-    with open("jonathan_data/test_tino_comp_data.json", "r") as f:
-        data = json.load(f)
-    true_formation_energies = np.array([i["formation_energy"] for i in data])
-    energies = np.array([i["energy"] for i in data])
-    comp = np.hstack([i["comp"] for i in data])
+    x = np.array([0.0, 0.0])
+    assert np.allclose(
+        f.reference_energy(x),
+        1.0,
+    )
 
-    # get references per primitive cell
-    ## reference parametric compositions
-    components = ["N", "O", "Va", "Ti"]
-    origin_and_end_members = [
-        [0, 0, 1, 0],
-        [0, 1, 0, 0],
-        [1, 0, 0, 2],
-        [1, 1, 1, 0],
-    ]
-    composition_converter = CompositionConverter(
-        components=components, origin_and_end_members=origin_and_end_members
+    x = np.array([0.5, 0.5])
+    assert np.allclose(
+        f.reference_energy(x),
+        1.0,
     )
-    ref_Ti_comp = composition_converter.param_composition([0, 0, 0, 2])
-    ref_Ti4NO3_comp = composition_converter.param_composition([0.25, 0.75, 0, 1])
-    ref_Ti2N2O_comp = composition_converter.param_composition([0.8, 0.4, 0, 0.8])
-    ref_Va_comp = composition_converter.param_composition([0, 0, 2, 0])
-    ## reference energies
-    ref_Ti_energy = -15.974669000000 * 2
-    ref_Ti4NO3_energy = -13.969243750000 * 2
-    ref_Ti2N2O_energy = -13.432652200000 * 2
-    ref_Va_energy = 0
 
-    # calculate formation energies
-    end_state_compositions = np.array(
-        [ref_Ti_comp, ref_Ti4NO3_comp, ref_Ti2N2O_comp, ref_Va_comp]
-    ).T
-    end_state_energies = np.array(
-        [ref_Ti_energy, ref_Ti4NO3_energy, ref_Ti2N2O_energy, ref_Va_energy]
+    assert np.allclose(
+        f.reference_energy(comp_ref),
+        energy_ref,
     )
-    formation_energy_calculator = FormationEnergyCalculator(
-        end_state_compositions, end_state_energies
+
+    x = np.array([0.9, 0.1])
+    assert np.allclose(
+        f.reference_energy(x),
+        0.2,
     )
-    formation_energies = formation_energy_calculator.get_formation_energy(
-        points=comp, energies=energies
+    e = 0.3
+    assert np.allclose(
+        f.formation_energy(energy=e, composition=x),
+        0.1,
     )
-    # passes
-    assert np.all(
-        np.isclose(formation_energies - true_formation_energies, 0, atol=1e-6)
+
+    X = np.array(
+        [
+            [0.9, 0.1],
+            [0.1, 0.9],
+        ]
     )
+    assert np.allclose(
+        f.reference_energy(X),
+        np.array([0.2, 1.8]),
+    )
+    e = np.array([0.3, 1.7])
+    assert np.allclose(
+        f.formation_energy(energy=e, composition=X),
+        np.array([0.1, -0.1]),
+    )
+
+
+def test_FormationEnergyCalculator_io():
+    energy_ref = np.array(
+        [
+            1.0,  # Reference state 1 energy
+            0.0,  # Reference state 2 energy
+            2.0,  # Reference state 3 energy
+        ]
+    )
+    comp_ref = np.array(
+        [
+            [0.0, 0.0],  # Reference state 1 composition
+            [1.0, 0.0],  # Reference state 2 composition
+            [0.0, 1.0],  # Reference state 3 composition
+        ]
+    ).transpose()  # <-- comps as columns
+
+    f = FormationEnergyCalculator(
+        composition_ref=comp_ref,
+        energy_ref=energy_ref,
+    )
+    assert isinstance(f, FormationEnergyCalculator)
+    assert f.independent_compositions == 2
+
+    data = f.to_dict()
+    assert isinstance(data, dict)
+    assert "composition_ref" in data
+    assert np.allclose(
+        np.array(data["composition_ref"]).transpose(),
+        comp_ref,
+    )
+    assert "energy_ref" in data
+    assert np.allclose(
+        np.array(data["energy_ref"]),
+        energy_ref,
+    )
+
+    f_in = FormationEnergyCalculator.from_dict(data)
+    assert np.allclose(
+        f_in.composition_ref,
+        f.composition_ref,
+    )
+    assert np.allclose(
+        f_in.energy_ref,
+        f.energy_ref,
+    )
+
+    import io
+    from contextlib import redirect_stdout
+
+    string_io = io.StringIO()
+    with redirect_stdout(string_io):
+        print(f)
+    out = string_io.getvalue()
+    assert "composition_ref" in out
+    assert "energy_ref" in out
