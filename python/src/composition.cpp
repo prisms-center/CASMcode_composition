@@ -347,7 +347,9 @@ PYBIND11_MODULE(_composition, m) {
     The method iterates over possible choices and checks:
 
     1. Does the current choice of K end members span the full space?
-    2. Try each of the chosen K end members as the origin, and let remaining define composition axes. Does this result in only positive parametric composition parameters?
+    2. Try each of the chosen K end members as the origin, and let remaining
+       define composition axes. Does this result in only positive parametric
+       composition parameters?
 
     If (1) and (2) are satisfied, that choice of origin and end members are
     included in the results.
@@ -371,6 +373,9 @@ PYBIND11_MODULE(_composition, m) {
         the origin is the first column of each matrix, and the subsequent columns
         are the compositions of the end members. Rows are ordered according to
         the order requested by ``components``.
+
+        These "end member compositions" are the extreme compositions allowed
+        by `allowed_occs`.
 
     )pbdoc");
 
@@ -517,13 +522,41 @@ PYBIND11_MODULE(_composition, m) {
 
       where:
 
-      - :math:`\vec{n}`: The mol composition as number of each component species per unit cell, a vector of length :math:`s`.
-      - :math:`\vec{x}`: The parametric composition, a vector of length :math:`k`, giving the composition along each composition axis when referenced to the origin composition.
-      - :math:`\vec{n}_0`: The origin in composition space, a vector of length :math:`s`, as the number of each component species per unit cell.
+      - :math:`\vec{n}`: The mol composition as number of each component species
+        per unit cell, a vector of length :math:`s`.
+      - :math:`\vec{x}`: The parametric composition, a vector of length :math:`k`,
+        giving the composition along each composition axis when referenced to the
+        origin composition.
+      - :math:`\vec{n}_0`: The origin in composition space, a vector of length
+        :math:`s`, as the number of each component species per unit cell.
       - :math:`s`: The number of component species (``n_components``).
       - :math:`k`: The number of independent composition axes (``k``).
-      - :math:`Q`: Matrix of shape=(:math:`s`, :math:`k`), with columns representing the end member compositions, as number of each component species per unit cell, for each independent composition axes.
-      - :math:`R`: Matrix of shape=(:math:`s`, :math:`k`), with columns forming the dual-spanning basis of Q, such that :math:`\mathbf{R}^{\mathsf{T}}\mathbf{Q} = \mathbf{Q}^{\mathsf{T}}\mathbf{R} = \mathbf{I}`.
+      - :math:`Q`: Matrix of shape=(:math:`s`, :math:`k`), with columns representing
+        the change in composition per unit cell along each independent composition axis.
+      - :math:`R`: Matrix of shape=(:math:`s`, :math:`k`), with columns forming the
+        dual-spanning basis of Q, such that
+        :math:`\mathbf{R}^{\mathsf{T}}\mathbf{Q} = \mathbf{Q}^{\mathsf{T}}\mathbf{R} = \mathbf{I}`.
+
+      The "parametric composition axes" are the columns of :math:`Q`,
+      :math:`\vec{q}_i`. Due to preservation of the number of sites per
+      unit cell, :math:`\sum_{i} Q_{ij} = 0` (vacancies are included as a
+      component). If :math:`\sum_{i} |Q_{ij}| = 2`, the parametric composition
+      axis can be said to be normalized in the sense that a unit distance along
+      that axis corresponds to a change in occupation of one site per unit cell.
+
+      Notes:
+
+      - The term "endmember" usually refers to the extreme compositions in a
+        solid solution. In the context of CompositionConverter, the term
+        "end member composition" is used to mean the composition one unit
+        distance along a parametric composition axis,
+        :math:`\vec{n}_0 + \vec{q}_i`.
+      - When printing formulas, the characters "a", "b", "c", etc. are used to
+        represent the parametric compositions, :math:`x_1`, :math:`x_2`,
+        :math:`x_3`, etc.
+      - When referring to parametric composition axes, the characters "a", "b",
+        "c", etc. are used to represent the parametric composition axes,
+        :math:`\vec{q}_1`, :math:`\vec{q}_2`, :math:`\vec{q}_3`, etc.
 
       )pbdoc")
       .def(py::init<std::vector<std::string> const &, Eigen::MatrixXd,
@@ -539,9 +572,11 @@ PYBIND11_MODULE(_composition, m) {
           The requested component order in the composition vectors.
       origin_and_end_members: numpy.ndarray[numpy.float64[n_components, n_composition_axes+1]]
           A matrix representing the origin and end member compositions
-          for the choice of composition axes. The composition of the origin
-          is the first column of each matrix, and the subsequent columns
-          are the compositions of the end members. Rows are ordered according to
+          for the choice of composition axes. The composition of the origin,
+          :math:`\vec{n}_0`, is the first column of each matrix, and the
+          subsequent columns are the "end member compositions" one unit
+          distance along a parametric composition axis,
+          :math:`\vec{n}_0 + \vec{q}_i`. Rows are ordered according to
           the order requested by ``components``.
       vacancy_names : set[str]
           Set of component names that should be recognized as vacancies.
@@ -655,7 +690,7 @@ PYBIND11_MODULE(_composition, m) {
       .def("end_member_formula",
            &composition::CompositionConverter::end_member_formula, py::arg("i"),
            R"pbdoc(
-           Return formula for the i-th end member, :math:`q_i`.
+           Return formula for the i-th end member, :math:`\vec{n}_0 + \vec{q}_i`.
            )pbdoc")
       .def("param_component_formula",
            &composition::CompositionConverter::comp_formula, py::arg("i"),

@@ -16,6 +16,7 @@ from ._formation_energy_calculator import (
     FormationEnergyCalculator,
 )
 from ._methods import (
+    make_normalized_origin_and_end_members,
     make_standard_axes,
     print_axes_summary,
     print_axes_table,

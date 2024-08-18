@@ -13,41 +13,47 @@ from ._composition import (
 )
 
 
-def make_normalized_axes(
+def make_normalized_origin_and_end_members(
     origin_and_end_members: np.ndarray,
     tol: float = libcasm.casmglobal.TOL,
 ) -> np.ndarray:
-    """Normalize composition axes so that one unit along a parametric composition
-    axis correponds to a change of one site per unit cell in the occupation.
+    R"""Normalize compositions so that one unit along a parametric composition
+    axis corresponds to a change of one site per unit cell in the occupation.
+
+    See :class:`CompositionConverter` for details on definitions.
 
     Parameters
     ----------
     origin_and_end_members: np.ndarray
-        A matrix with the origin and end member compositions as columns.
-    tol: float = libcasm.casmglobal.TOL
+        A matrix with the origin, :math:`\vec{n}_0`, as the first column and
+        end member compositions, :math:`\vec{n}_0 + \vec{q}_i` as the
+        remaining columns.
+    tol: float = :data:`~libcasm.casmglobal.TOL`
         Tolerance for comparison. Used to find composition axes such that the
         parametric composition parameters are non-negative.
 
     Returns
     -------
-    normalized_axes: np.ndarray
-        A modified `origin_and_end_members` matrix with the origin and end member
-        compositions as columns. The end member compositions are modified so that one
-        unit along the composition axis corresponds to a change of one site per unit
-        cell in the occupation.
+    normalized_origin_and_end_members: np.ndarray
+        A modified `origin_and_end_members` matrix. The origin (first column) is not
+        modified. The end member compositions (subsequent columns) are modified so
+        that a unit distance along each composition axis corresponds to a change of
+        one site per unit cell in the occupation.
     """
-    axes = origin_and_end_members
-    origin = axes[:, 0]
-    for i in range(1, axes.shape[1]):
-        if not np.isclose(np.sum(axes[:, i] - origin), 0.0, atol=tol):
+    M = origin_and_end_members
+    origin = M[:, 0]
+    for i in range(1, M.shape[1]):
+        if not np.isclose(np.sum(M[:, i] - origin), 0.0, atol=tol):
             raise ValueError(
-                f"Invalid axes: column {i} sum does not match origin sum (column 0)."
+                "Invalid origin_and_end_members: "
+                f"sum of column {i} sum does not match sum of origin (column 0)."
             )
-        if np.allclose(axes[:, i], axes[:, 0], atol=tol):
+        if np.allclose(M[:, i], M[:, 0], atol=tol):
             raise ValueError(
-                f"Invalid axes: column {i} is the same as the origin (column 0)."
+                "Invalid origin_and_end_members: "
+                f"column {i} is the same as the origin (column 0)."
             )
-        delta = axes[:, i] - origin
+        delta = M[:, i] - origin
         inc_sum = 0.0
         dec_sum = 0.0
         for dx_i in delta:
@@ -56,8 +62,8 @@ def make_normalized_axes(
             elif dx_i < -tol:
                 dec_sum += dx_i
 
-        axes[:, i] = origin + delta / inc_sum
-    return axes
+        M[:, i] = origin + delta / inc_sum
+    return M
 
 
 def make_standard_axes(
@@ -88,17 +94,17 @@ def make_standard_axes(
         If True, normalize the composition axes so that going one unit along the
         composition axis corresponds to a change of one site per unit cell in the
         occupation. If False, one unit along the composition axis corresponds to a
-        change from the origin to the end member composition.
-    tol: float = libcasm.casmglobal.TOL
+        change from the origin to an extreme end member composition.
+    tol: float = :data:`~libcasm.casmglobal.TOL`
         Tolerance for comparison. Used to find composition axes such that the
         parametric composition parameters are non-negative.
 
     Returns
     -------
-    calculator: CompositionCalculator
+    calculator: :class:`CompositionCalculator`
         A composition calculator object
-    standard_axes: list[CompositionConverter]
-        List of standard composition axes
+    standard_axes: list[:class:`CompositionConverter`]
+        List of :class:`CompositionConverter` for the standard composition axes
     """
 
     ## Determine defaults
@@ -136,13 +142,16 @@ def make_standard_axes(
     if vacancy_names is None:
         vacancy_names = set(["va", "Va", "VA"])
 
-    _standard_axes = make_standard_origin_and_end_members(
+    _standard_origin_and_end_members = make_standard_origin_and_end_members(
         components=components,
         allowed_occs=allowed_occs,
         tol=tol,
     )
     if normalize:
-        _standard_axes = [make_normalized_axes(axes) for axes in _standard_axes]
+        _standard_origin_and_end_members = [
+            make_normalized_origin_and_end_members(axes)
+            for axes in _standard_origin_and_end_members
+        ]
 
     calculator = CompositionCalculator(
         components=components,
@@ -155,7 +164,7 @@ def make_standard_axes(
             origin_and_end_members=axes,
             vacancy_names=vacancy_names,
         )
-        for axes in _standard_axes
+        for axes in _standard_origin_and_end_members
     ]
     return (calculator, standard_axes)
 
@@ -211,7 +220,7 @@ def print_axes_table(
         keys are the indices in the list. If a dict, the printed keys are the
         dict keys.
     out: Optional[TextIO] = None
-        Output stream. Defaults to `sys.stdout
+        Output stream. Defaults to `sys.stdout`
 
     """
     if isinstance(possible_axes, list):
@@ -268,7 +277,7 @@ def print_axes_summary(
         If True, include "chem_pot(Va)" in the summary; If False (default) assume
         that the vacancy chemical potential is zero.
     out: Optional[TextIO] = None
-        Output stream. Defaults to `sys.stdout
+        Output stream. Defaults to `sys.stdout`
 
     """
 
