@@ -702,12 +702,6 @@ PYBIND11_MODULE(_composition, m) {
            R"pbdoc(
            Return formula for the i-th mol composition component, :math:`n_i`, in terms of :math:`\vec{x}`.
            )pbdoc")
-      //      .def("param_chem_pot_formula",
-      //           &composition::CompositionConverter::param_chem_pot_formula,
-      //           py::arg("i"),
-      //           R"pbdoc(
-      //           Return formula for the parametric composition conjugate
-      //           potential in terms of the chemical potentials. )pbdoc")
       .def(
           "param_chem_pot_formula",
           [](composition::CompositionConverter const &m, int i,

@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0a4] - 2024-08-18
+
+### Added
+
+- Added range checks for CompositionConverter methods taking a parametric composition axis index
+- Added FormationEnergyCalculator
+- Added make_standard_axes, make_normalized_origin_and_end_members
+- Added pretty_json, print_axes_summary, and print_axes_table
+- Added methods to CompositionCalculator: allowed_occs, vacancy_names, from_dict, to_dict, __repr__
+- Added CompositionConverter.__repr__
+- Added include_va option to CompositionConverter.param_chem_pot_formula to allow printing formulas with or without "chem_pot(Va)"
+
+### Fixed
+
+- Fixed CompositionConverter.origin_formula, which was calling the wrong method
+- Removed extra space in CompositionConverter.param_chem_pot_formula with leading negative term
+
+
 ## [2.0a3] - 2024-07-12
 
 ### Changed
