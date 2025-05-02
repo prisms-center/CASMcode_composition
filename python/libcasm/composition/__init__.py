@@ -1,4 +1,5 @@
-"""CASM composition axes, conversions, and calculations """
+"""CASM composition axes, conversions, and calculations"""
+
 from ._composition import (
     CompositionCalculator,
     CompositionConverter,
