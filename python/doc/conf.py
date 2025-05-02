@@ -3,7 +3,7 @@ import os
 # -- package specific configuration --
 project = "libcasm-composition"
 version = "2.0"  # The short X.Y version.
-release = "2.0a4"  # The full version, including alpha/beta/rc tags.
+release = "2.0.0"  # The full version, including alpha/beta/rc tags.
 project_desc = "CASM Composition"
 logo_text = "libcasm-composition"
 github_url = "https://github.com/prisms-center/CASMcode_composition/"

@@ -2,7 +2,7 @@ from skbuild import setup
 
 setup(
     name="libcasm-composition",
-    version="2.0a4",
+    version="2.0.0",
     packages=["libcasm", "libcasm.composition"],
     package_dir={"": "python"},
     cmake_install_dir="python/libcasm",
