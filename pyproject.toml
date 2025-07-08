@@ -6,13 +6,13 @@ requires = [
     "cmake>=3.20",
     "ninja",
     "pybind11>=2.6",
-    "libcasm-global>=2.0.6",
+    "libcasm-global>=2.1.0",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "libcasm-composition"
-version = "2.0.0"
+version = "2.1.0"
 authors = [
   { name="CASM developers", email="casm-developers@lists.engr.ucsb.edu" },
 ]
@@ -28,7 +28,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-  "libcasm-global>=2.0.6",
+  "libcasm-global>=2.1.0",
   "numpy",
   "tabulate",
 ]
@@ -52,13 +52,11 @@ select = ["NPY201", "E", "F", "I"]
 known-first-party = ["libcasm", "casm"]
 
 [tool.cibuildwheel]
-# Build for python3.9, 3.10, 3.11, 3.12
+# Build for python3.9, 3.10, 3.11, 3.12, 3.13
 build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
-# Build for cpython only
-skip =  "pp*"
 
 # Need libcasm-global at wheel repair stage
-before-build = "pip install libcasm-global>=2.0.6"
+before-build = "pip install libcasm-global>=2.1.0"
 
 # Testing
 test-requires = "pytest pytest-datadir"
@@ -72,6 +70,6 @@ repair-wheel-command = ""
 
 [tool.cibuildwheel.linux]
 # dependencies do not build for musl
-skip = ["pp* *musllinux*"]
+skip = ["*musllinux*"]
 
 repair-wheel-command = ""
