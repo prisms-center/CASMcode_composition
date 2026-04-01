@@ -20,6 +20,8 @@ class FormationEnergyCalculator:
     :math:`i`, and :math:`x_j(\config_i)` is the :math:`j`-th element of the
     composition of configuration :math:`i`.
 
+    The formation energies calculated are intensive properties normalized
+    per primitive cell.
     """
 
     def __init__(
@@ -108,6 +110,14 @@ class FormationEnergyCalculator:
     ) -> np.ndarray:
         """Calculate the formation energy of a configuration.
 
+        The energy must be normalized per primitive cell because the
+        calculated formation energy per primitive cell is an intensive
+        property. For example, the energy :math:`E` of an :math:`n`-atom
+        supercell of a prim with a single basis site should be supplied as
+        :math:`E/n`. It is incorrect to use the calculator on the total
+        energy and then divide by :math:`n` afterwards as this would be
+        treating the formation energy per prim as an extensive property.
+
         Parameters
         ----------
         composition: np.ndarray
@@ -118,7 +128,8 @@ class FormationEnergyCalculator:
         energy: Union[float, np.ndarray]
             The energy of 1 or more structures. This may be a scalar
             with the energy of a single structure, or a 1d array of shape=(n,)
-            with the energy of :math:`n` structures.
+            with the energy of :math:`n` structures. The energy must be
+            normalized per primitive cell.
 
         Returns
         -------
